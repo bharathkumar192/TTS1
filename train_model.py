@@ -45,7 +45,7 @@ def train(base_model_dir, processed_data_dir, output_dir):
 
     # Dataset Configuration
     LANGUAGE = "hi"
-    METADATA_FILE_PATH = os.path.join(processed_data_dir, "metadata.csv")
+    METADATA_FILE_PATH = "metadata.csv"
     WAVS_DIR_PATH = os.path.join(processed_data_dir, "wavs")
     # Ensure reference speaker wav exists
     SPEAKER_REFERENCE_WAV = os.path.join(WAVS_DIR_PATH, "000001.wav") # Example, ensure this exists
