@@ -106,7 +106,7 @@ def train(base_model_dir, processed_data_dir, output_dir):
         dvae_checkpoint=DVAE_CHECKPOINT,
         xtts_checkpoint=XTTS_CHECKPOINT,
         tokenizer_file=TOKENIZER_FILE,
-        speakers_file=SPEAKERS_FILE,  # Added to support speaker handling
+        # speakers_file=SPEAKERS_FILE,  # Added to support speaker handling
         # IMPORTANT: Use the SAME number of GPT layers as the base model
         gpt_layers=gpt_layers,
         # GPT specific tokens from XTTS v2 config
