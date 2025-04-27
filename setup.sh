@@ -21,11 +21,11 @@ BASE_MODEL_REPO="coqui/XTTS-v2"
 TARGET_HF_MODEL_REPO="bharathkumar1922001/TTS-1x" # Your target repo for uploading results
 
 # --- Check for Hugging Face Token ---
-if [ -z "${HUGGING_FACE_HUB_TOKEN:-}" ]; then
-  echo "Error: HUGGING_FACE_HUB_TOKEN environment variable is not set."
-  echo "Please set it before running the script: export HUGGING_FACE_HUB_TOKEN='your_token_here'"
-  exit 1
-fi
+# if [ -z "${HUGGING_FACE_HUB_TOKEN:-}" ]; then
+#   echo "Error: HUGGING_FACE_HUB_TOKEN environment variable is not set."
+#   echo "Please set it before running the script: export HUGGING_FACE_HUB_TOKEN='your_token_here'"
+#   exit 1
+# fi
 echo "✓ Hugging Face token found."
 
 # --- Setup Directories ---
@@ -40,12 +40,12 @@ echo "✓ Directories created."
 # --- Install Dependencies ---
 echo ">>> Installing Python dependencies..."
 pip install --upgrade pip
-pip install coqui-tts datasets torch torchaudio huggingface_hub deepspeed soundfile pandas transformers accelerate
+pip install coqui-tts datasets torch torchaudio huggingface_hub deepspeed soundfile pandas transformers accelerate hf_xet
 echo "✓ Dependencies installed."
 
 # --- Log in to Hugging Face ---
 echo ">>> Logging in to Hugging Face Hub..."
-huggingface-cli login --token "$HUGGING_FACE_HUB_TOKEN" --add-to-git-credential
+# huggingface-cli login --token "$HUGGING_FACE_HUB_TOKEN" --add-to-git-credential
 echo "✓ Logged in to Hugging Face Hub."
 
 # --- Download Base XTTS-v2 Model ---
@@ -108,7 +108,7 @@ echo "✓ Base model files downloaded to ${BASE_MODEL_DIR}."
 # --- Download User Dataset ---
 echo ">>> Downloading user dataset ${USER_DATASET_ID}..."
 # Using huggingface_hub download which is simpler than snapshot_download for basic cases
-huggingface-hub download --repo-type dataset "$USER_DATASET_ID" --local-dir "$DATASET_DOWNLOAD_DIR" --local-dir-use-symlinks False
+huggingface-cli download --repo-type dataset "$USER_DATASET_ID" --local-dir "$DATASET_DOWNLOAD_DIR" --local-dir-use-symlinks False
 echo "✓ User dataset downloaded to ${DATASET_DOWNLOAD_DIR}."
 
 # --- Run Data Preprocessing ---
