@@ -10,7 +10,7 @@ set -o pipefail
 # --- Configuration ---
 # Ensure HUGGING_FACE_HUB_TOKEN is set in your environment before running
 # export HUGGING_FACE_HUB_TOKEN=""
-
+apt-get update && apt-get install -y nano
 PROJECT_DIR="xtts_sangeeta_finetune"
 BASE_MODEL_DIR="${PROJECT_DIR}/xtts_v2_base_model"
 DATASET_DOWNLOAD_DIR="${PROJECT_DIR}/sangeeta_dataset_download" # Raw download
