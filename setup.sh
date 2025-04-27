@@ -39,8 +39,8 @@ echo "✓ Directories created."
 
 # --- Install Dependencies ---
 echo ">>> Installing Python dependencies..."
-pip install -q --upgrade pip
-pip install -q coqui-tts datasets torch torchaudio huggingface_hub deepspeed soundfile pandas transformers accelerate
+pip install --upgrade pip
+pip install coqui-tts datasets torch torchaudio huggingface_hub deepspeed soundfile pandas transformers accelerate
 echo "✓ Dependencies installed."
 
 # --- Log in to Hugging Face ---
