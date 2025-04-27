@@ -100,7 +100,7 @@ def train(base_model_dir, processed_data_dir, output_dir):
         dvae_checkpoint=DVAE_CHECKPOINT,
         xtts_checkpoint=XTTS_CHECKPOINT, # Base model to fine-tune
         tokenizer_file=TOKENIZER_FILE,
-        speakers_file=SPEAKERS_FILE,     # Provide path to speakers file
+        # speakers_file=SPEAKERS_FILE,     # Provide path to speakers file
         speaker_embedding_channels=1024, # From base config inspection
         use_speaker_embedding=True,      # Important for fine-tuning speaker characteristics
         # GPT specific tokens from XTTS v2 config
