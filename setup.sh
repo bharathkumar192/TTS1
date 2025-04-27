@@ -9,7 +9,9 @@ set -o pipefail
 
 # --- Configuration ---
 # Ensure HUGGING_FACE_HUB_TOKEN is set in your environment before running
-# export HUGGING_FACE_HUB_TOKEN="your_token_here"
+ 
+# export HUGGING_FACE_HUB_TOKEN=""
+
 
 PROJECT_DIR="xtts_sangeeta_finetune"
 BASE_MODEL_DIR="${PROJECT_DIR}/xtts_v2_base_model"

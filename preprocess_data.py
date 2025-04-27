@@ -56,12 +56,8 @@ def preprocess(raw_data_dir, processed_data_dir):
 
             # Save audio file AT ITS ORIGINAL (expected 24kHz) RATE
             sf.write(output_path, audio_data, actual_sr)
-
-            # Add to metadata (using relative path from metadata file location)
-            relative_audio_path = os.path.join("wavs", output_filename)
-            # Basic text cleaning: replace pipe characters if they exist in the sentence
             cleaned_sentence = sentence.replace("|", " ")
-            metadata.append(f"{relative_audio_path}|{cleaned_sentence}|Sangeeta") # Speaker name 'Sangeeta'
+            metadata.append(f"{output_filename}|{cleaned_sentence}|Sangeeta") # Speaker name 'Sangeeta'
 
         except Exception as e:
             print(f"Error processing item {i}: {e}")
