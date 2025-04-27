@@ -8,7 +8,7 @@ set -u
 set -o pipefail
 
 # --- Configuration ---
-export HUGGING_FACE_HUB_TOKEN=""
+# export HUGGING_FACE_HUB_TOKEN=""
 PROJECT_DIR="xtts_sangeeta_finetune"
 BASE_MODEL_DIR="${PROJECT_DIR}/xtts_v2_base_model"
 DATASET_DOWNLOAD_DIR="${PROJECT_DIR}/sangeeta_dataset_download" # Raw download
