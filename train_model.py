@@ -166,7 +166,7 @@ def train(base_model_dir, processed_data_dir, output_dir):
             },
         ],
         # xtts_config_path=CONFIG_FILE, # Provide path to base model config
-        speakers_file_path=SPEAKERS_FILE, # Provide path to speakers file
+        # speakers_file_path=SPEAKERS_FILE, # Provide path to speakers file
     )
 
     # Init the model trainer from config
