@@ -38,9 +38,9 @@ def train(base_model_dir, processed_data_dir, output_dir):
     OPTIMIZER_WD_ONLY_ON_WEIGHTS = True # Keep True for single GPU
     START_WITH_EVAL = False
     # Lower batch size if facing memory issues, increase GRAD_ACUMM_STEPS accordingly
-    BATCH_SIZE = 3
-    GRAD_ACUMM_STEPS = 84 # Effective batch size = 3 * 84 = 252
-    EPOCHS = 100 # Adjust number of training epochs
+    BATCH_SIZE = 8
+    GRAD_ACUMM_STEPS = 64 # Effective batch size = 3 * 84 = 252
+    EPOCHS = 15 # Adjust number of training epochs
     LR = 5e-6
 
     # Dataset Configuration
