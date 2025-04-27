@@ -9,9 +9,7 @@ set -o pipefail
 
 # --- Configuration ---
 # Ensure HUGGING_FACE_HUB_TOKEN is set in your environment before running
- 
 # export HUGGING_FACE_HUB_TOKEN=""
-
 
 PROJECT_DIR="xtts_sangeeta_finetune"
 BASE_MODEL_DIR="${PROJECT_DIR}/xtts_v2_base_model"
@@ -43,8 +41,8 @@ echo "✓ Directories created."
 
 # --- Install Dependencies ---
 echo ">>> Installing Python dependencies..."
-pip install --upgrade pip
-pip install coqui-tts datasets torch torchaudio huggingface_hub deepspeed soundfile pandas transformers accelerate hf_xet
+pip install  --upgrade pip
+pip install  coqui-tts datasets torch torchaudio huggingface_hub deepspeed soundfile pandas transformers accelerate hf_xet
 echo "✓ Dependencies installed."
 
 # --- Log in to Hugging Face ---
@@ -59,8 +57,9 @@ echo "✓ Logged in to Hugging Face Hub."
 # Check if model files already exist to potentially skip download
 CONFIG_PATH_CHECK="${BASE_MODEL_DIR}/config.json"
 MODEL_PATH_CHECK="${BASE_MODEL_DIR}/model.pth"
+SPEAKERS_PATH_CHECK="${BASE_MODEL_DIR}/speakers_xtts.pth"
 
-if [ -f "$CONFIG_PATH_CHECK" ] && [ -f "$MODEL_PATH_CHECK" ]; then
+if [ -f "$CONFIG_PATH_CHECK" ] && [ -f "$MODEL_PATH_CHECK" ] && [ -f "$SPEAKERS_PATH_CHECK" ]; then
     echo "✓ Base model files appear to exist in ${BASE_MODEL_DIR}. Skipping download."
 else
     echo ">>> Downloading base XTTS-v2 model from ${BASE_MODEL_REPO}..."
@@ -114,10 +113,7 @@ EOF
     echo "✓ Base model files downloaded to ${BASE_MODEL_DIR}."
 fi
 
-
 # --- Download User Dataset ---
-# Check if download directory looks populated before downloading
-# A simple check could be for the presence of the data/ subdirectory often used
 DATASET_MARKER_PATH="${DATASET_DOWNLOAD_DIR}/data"
 if [ -d "$DATASET_MARKER_PATH" ] && [ "$(ls -A "$DATASET_MARKER_PATH")" ]; then
      echo "✓ User dataset appears to exist in ${DATASET_DOWNLOAD_DIR}. Skipping download."
@@ -132,7 +128,6 @@ METADATA_PATH="${DATASET_PROCESSED_DIR}/metadata.csv"
 WAVS_PATH="${DATASET_PROCESSED_DIR}/wavs"
 
 echo ">>> Checking for existing preprocessed data..."
-# Check if metadata file exists AND wavs directory exists AND wavs directory is not empty
 if [ -f "$METADATA_PATH" ] && [ -d "$WAVS_PATH" ] && [ "$(ls -A "$WAVS_PATH")" ]; then
     echo "✓ Preprocessed data (metadata.csv and non-empty wavs dir) found in ${DATASET_PROCESSED_DIR}. Skipping preprocessing."
 else
@@ -153,8 +148,6 @@ CUDA_VISIBLE_DEVICES="0" python train_model.py \
     --output_dir "$TRAINING_OUTPUT_DIR"
 
 # Find the specific run directory created by the trainer
-# This assumes the trainer creates a directory starting with RUN_NAME inside TRAINING_OUTPUT_DIR
-# The RUN_NAME needs to match the one defined inside train_model.py
 TRAINING_RUN_NAME="GPT_XTTS_Sangeeta_Hindi_FT" # Ensure this matches train_model.py
 LATEST_RUN_DIR=$(ls -td "${TRAINING_OUTPUT_DIR}/${TRAINING_RUN_NAME}"*/ | head -1)
 
@@ -174,6 +167,69 @@ fi
 LATEST_RUN_DIR=$(echo "$LATEST_RUN_DIR" | sed 's:/*$::')
 
 echo "✓ Training finished. Output files are in ${LATEST_RUN_DIR}"
+
+# --- Ensure all required files exist in the output directory ---
+echo ">>> Verifying and preparing model artifacts for upload..."
+# Make sure we have all the required files in the latest run directory
+python <<EOF
+import os
+import shutil
+import glob
+
+source_dir = "${BASE_MODEL_DIR}"
+target_dir = "${LATEST_RUN_DIR}"
+
+# Files that should be present in the upload
+required_files = [
+    "config.json",       # Should be generated during training
+    "model.pth",         # Rename from best_model_*.pth if needed
+    "dvae.pth",          # Copy from base model
+    "mel_stats.pth",     # Copy from base model 
+    "speakers_xtts.pth", # Copy from base model
+    "vocab.json"         # Copy from base model
+]
+
+# First check for best model to use as model.pth
+best_model_files = glob.glob(os.path.join(target_dir, "best_model*.pth"))
+if best_model_files:
+    best_model = max(best_model_files, key=os.path.getmtime)
+    model_path = os.path.join(target_dir, "model.pth")
+    if not os.path.exists(model_path):
+        print(f"Copying {os.path.basename(best_model)} to model.pth")
+        shutil.copy2(best_model, model_path)
+    else:
+        print("model.pth already exists")
+else:
+    print("Warning: No best_model*.pth file found")
+
+# Copy any missing files from base model directory
+for file in required_files:
+    target_path = os.path.join(target_dir, file)
+    if not os.path.exists(target_path):
+        source_path = os.path.join(source_dir, file)
+        if os.path.exists(source_path):
+            print(f"Copying {file} from base model to output directory")
+            shutil.copy2(source_path, target_path)
+        else:
+            print(f"Warning: {file} not found in base model or output directory")
+    else:
+        print(f"File {file} already exists in output directory")
+
+# Verify all required files exist
+missing = False
+for file in required_files:
+    file_path = os.path.join(target_dir, file)
+    if not os.path.exists(file_path):
+        print(f"ERROR: Required file {file} missing from {target_dir}")
+        missing = True
+    else:
+        print(f"✓ Found {file}")
+
+if missing:
+    print("Warning: Some required files are missing!")
+else:
+    print("✓ All required files present for model upload")
+EOF
 
 # --- Push Model to Hugging Face Hub ---
 echo ">>> Uploading trained model artifacts from ${LATEST_RUN_DIR} to ${TARGET_HF_MODEL_REPO}..."
@@ -203,13 +259,12 @@ try:
         repo_id=target_repo_id,
         repo_type='model',
         commit_message=commit_msg,
-        # ignore_patterns=["*.log", "tensorboard/*", "eval/*"] # Example ignore patterns
+        ignore_patterns=["*.log", "tensorboard/*"]  # Ignore logs and tensorboard files
     )
     print("✓ Upload successful!")
 except Exception as e:
     print(f"Error uploading to Hugging Face Hub: {e}")
     # exit(1) # Decide if upload failure should stop the script
-
 EOF
 
 echo ">>> All steps completed! <<<"
